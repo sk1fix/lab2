@@ -21,54 +21,12 @@ namespace linkedList {
 		int _size;
 		Node<T>* _head;
 	public:
-		void print_coeff() const {
-			if (!_head) {
-				cout « "List is empty." « endl;
-				return;
-			}
-
-			Node<T>* current = _head;
-			int exponent = 0;
-
-			do {
-				if (current->_cofficient != 0) {
-					if (exponent == 0) {
-						cout « current->_cofficient;
-					}
-					else {
-						cout «(current->_cofficient > 0 ? "+" : "") « current->_cofficient « "*x^" « exponent;
-					}
-				}
-				current = current->_next;
-				exponent++;
-			} while (current != _head);
-
-			cout « endl;
-		}
 		
-		T evaluate_at(T x) const {
-			if (!_head) {
-				cerr « "List is empty." « endl;
-				return 0;
-			}
-
-			Node<T>* current = _head;
-			T result = 0;
-			int exponent = 0;
-
-			do {
-				result += current->_cofficient * pow(x, exponent);
-				current = current->_next;
-				exponent++;
-			} while (current != _head);
-
-			return result;
-		}
-
+		
 		
 		LinkedList(int size, int upper_bound, int lover_bound) : _head(nullptr) {
 			srand(time(nullptr));
-			for (int i = 0; i < size; ++i) {
+			for (int i = 0; i < size; i++) {
 				T cofficient = rand() % upper_bound + lover_bound;
 				push_head(cofficient);
 			}
@@ -77,7 +35,7 @@ namespace linkedList {
 		LinkedList(int size) : _head(nullptr)
 		{
 			srand(time(nullptr));
-			for (int i = 0; i < size; ++i) {
+			for (int i = 0; i < size; i++) {
 				float cofficient = 0.001 * rand();
 				push_head(cofficient);
 			}
@@ -284,6 +242,30 @@ namespace linkedList {
 
 			throw std::out_of_range("Index out of range");
 		}
+		void removeDuplicates() {
+			if (_head == nullptr) {
+				return;  
+			}
+
+			Node<T>* current = _head;
+			while (current != nullptr) {
+				Node<T>* runner = current;
+				while (runner->next != nullptr) {
+					if (current->data.surname == runner->next->data.surname &&
+						current->data.name == runner->next->data.name &&
+						current->data.course == runner->next->data.course) {
+						Node<T>* duplicate = runner->_next;
+						runner->next = runner->next->_next;
+						delete duplicate;
+					}
+					else {
+						runner = runner->_next;
+					}
+				}
+				current = current->_next;
+			}
+		}
+
 	};
 	
 
