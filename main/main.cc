@@ -3,6 +3,7 @@
 #include <stdexcept>
 #include <ctime>
 #include <cmath>
+#include <random>
 
 using namespace std;
 namespace linkedList {
@@ -10,263 +11,195 @@ namespace linkedList {
 	template<typename T>
 	class Node {
 	public:
-		T _cofficient;
-		Node* _next;
-		Node(T cofficient) :_cofficient(cofficient), _next(nullptr) {}
+		string lastName;
+		string firstName;
+		int course;
+		float averageScore;
+		Node* next;
+
+		Node(string lName, string fName, int crs, float score) {
+			lastName = lName;
+			firstName = fName;
+			course = crs;
+			averageScore = score;
+			next = nullptr;
+    	}
 	};
 
 	template <typename T>
 	class LinkedList {
 	private:
-		int _size;
 		Node<T>* _head;
 	public:
-		
-		
-		
-		LinkedList(int size, int upper_bound, int lover_bound) : _head(nullptr) {
-			srand(time(nullptr));
-			for (int i = 0; i < size; i++) {
-				T cofficient = rand() % upper_bound + lover_bound;
-				push_head(cofficient);
-			}
-		}
+		LinkedList() : _head(nullptr) {}
 
-		LinkedList(int size) : _head(nullptr)
-		{
-			srand(time(nullptr));
-			for (int i = 0; i < size; i++) {
-				float cofficient = 0.001 * rand();
-				push_head(cofficient);
-			}
-		}
-		
-		void delete_node(Node<T>& node) {
-			if (!_head) {
-				return;
-			}
-
-			Node<T>* current = _head;
-			while (current->_next != _head) {
-				if (current->_next->_cofficient == node._cofficient) {
-					Node<T>* temp = current->_next;
-					current->_next = current->_next->_next;
-					if (temp == _head) {
-						_head = _head->_next;
-					}
-					delete temp;
-				}
-				else {
-					current = current->_next;
-				}
-			}
-
-			if (_head && _head->_cofficient == node._cofficient) {
-				pop_head();
-			}
-		}
-
-
-		
-		void pop_tail() {
-			if (_head) {
-				Node<T>* current = _head;
-				Node<T>* previous = nullptr;
-
-				while (current->_next != _head) {
-					previous = current;
-					current = current->_next;
-				}
-				if (previous) {
-					previous->_next = _head;
-				}
-				else {
-					_head = nullptr;
-				}
-				delete current;
-			}
-		}
-
-		
-		void pop_head() {
-			if (_head) {
-				Node<T>* temp = _head;
-				if (_head->_next != _head) {
-					Node<T>* current = _head;
-					while (current->_next != _head) {
-						current = current->_next;
-					}
-					_head = _head->_next;
-					current->_next = _head;
-				}
-				else {
-					_head = nullptr;
-				}
-				delete temp;
-			}
-		}
-
-		
-		~LinkedList()
-		{
-			while (_head) {
-				pop_head();
-			}
-		}
-		
-		LinkedList<T>& operator=(const LinkedList<T>& other) {
-			if (this == &other) {
-				return *this;
-			}
-			while (_head) {
-				pop_head();
-			}
-			if (other._head) {
-				Node<T>* otherCurrent = other._head;
+		LinkedList(const LinkedList& other) {
+			_head = nullptr;
+			if (other._head != nullptr) {
+				Node* current = other._head->next;
 				do {
-					push_tail(otherCurrent->_cofficient);
-					otherCurrent = otherCurrent->_next;
-				} while (otherCurrent != other._head);
+					addStudent(new Node(current->lastName, current->firstName, current->course, current->averageScore));
+					current = current->next;
+				} while (current != other._head->next);
+			}
+		}
+		LinkedList(int numStudents) : _head(nullptr) {
+			std::random_device rd;
+			std::mt19937 gen(rd());
+			std::uniform_real_distribution<> scoreDistribution(2.0, 5.0);
+			for (int i = 0; i < numStudents; ++i) {
+				addStudent(new Node("LastName" + to_string(i), "FirstName" + to_string(i), i % 5 + 1, scoreDistribution(gen)));
+			}
+		}
+
+		~LinkedList() {
+			while (_head != nullptr) {
+				pop_head();
+			}
+		}
+
+		LinkedList& operator=(const LinkedList& other) {
+			if (this != &other) {
+				LinkedList temp(other);
+				std::swap(head, temp.head);
 			}
 			return *this;
 		}
-		
-		LinkedList(const LinkedList<T>& other) : _head(nullptr)
-		{
-			if (other._head) {
-				Node<T>* otherCurrent = other._head;
-				do {
-					push_tail(otherCurrent->_cofficient);
-					otherCurrent = otherCurrent->_next;
-				} while (otherCurrent != other._head);
+
+		void addStudent(Node* newStudent) {
+			if (head == nullptr) {
+				_head = newStudent;
+				_head->next = _head; 
+			} else {
+				newStudent->next = _head->next;
+				_head->next = newStudent;
+				_head = newStudent; 
 			}
 		}
 
-		
-		void push_head(T cofficient)
-		{
-			Node<T>* _newmode = new Node<T>(cofficient);
-			if (!_head) {
-				_head = _newmode;
-				_head->_next = _head;
-			}
-			Node<T>* current = _head;
-			while (current->_next != _head) {
-				current = current->_next;
-			}
-			_newmode->_next = _head;
-			current->_next = _newmode;
-			_head = _newmode;
-			_size++;
-		}
-		
-		void push_head(LinkedList<T> other) {
-			Node<T>* otherCurrent = other._head;
-			if (otherCurrent) {
+		void push_tail(LinkedList& other) {
+			if (other._head != nullptr) {
+				Node* current = other._head->next;
 				do {
-					push_head(otherCurrent->_cofficient);
-					otherCurrent = otherCurrent->_next;
-				} while (otherCurrent != other._head);
+					addStudent(new Node(current->lastName, current->firstName, current->course, current->averageScore));
+					current = current->next;
+				} while (current != other._head->next);
 			}
 		}
 
-		
-		T& operator[](int index)
-		{
-			int counter = 0;
-			Node<T>* current = this->_head;
-			do {
-				if (counter == index) {
-					return current->_cofficient;
+		void push_head(Node* newStudent) {
+			if (_head == nullptr) {
+				addStudent(newStudent);
+			} else {
+				newStudent->next = _head->next;
+				_head->next = newStudent;
+			}
+		}
+
+		void push_head(LinkedList& other) {
+			if (other._head != nullptr) {
+				Node* current = other._head->next;
+				do {
+					push_head(new Node(current->lastName, current->firstName, current->course, current->averageScore));
+					current = current->next;
+				} while (current != other._head->next);
+			}
+		}
+
+		void pop_head() {
+			if (_head != nullptr) {
+				if (_head->next == _head) { 
+					delete _head;
+					_head = nullptr;
+				} else {
+					Node* temp = _head->next;
+					_head->next = temp->next;
+					delete temp;
 				}
-				current = current->_next;
-				counter++;
-			} while (current != this->_head);
-		}
-		
-		void push_tail(T coefficient) {
-			Node<T>* new_node = new Node<T>(coefficient);
-
-			if (!_head) {
-				_head = new_node;
-				_head->_next = _head;
 			}
-			else {
-				Node<T>* current = _head;
-				while (current->_next != _head) {
-					current = current->_next;
+		}
+
+		void pop_tail() {
+			if (_head != nullptr) {
+				if (_head->next == _head) { 
+					delete _head;
+					_head = nullptr;
+				} else {
+					Node* current = _head->next;
+					while (current->next != _head) {
+						current = current->next;
+					}
+					current->next = _head->next;
+					delete _head;
+					_head = current;
 				}
-				current->_next = new_node;
-				new_node->_next = _head;
 			}
 		}
-		
-		void push_tail(LinkedList<T> other) {
-			if (other._head) {
-				Node<T>* otherCurrent = other._head;
-				Node<T>* otherHead = other._head;
-				do {
-					Node<T>* new_node = new Node<T>(otherCurrent->_cofficient);
-					if (!_head) {
-						_head = new_node;
-						_head->_next = _head;
-					}
-					else {
-						Node<T>* current = _head;
-						while (current->_next != _head) {
-							current = current->_next;
-						}
-						new_node->_next = _head;
-						current->_next = new_node;
-					}
-					otherCurrent = otherCurrent->_next;
-				} while (otherCurrent != otherHead);
-				other._head = nullptr;
-			}
-		}
-		
-		T operator[](int index) const {
-			int counter = 0;
-			Node<T>* current = _head;
 
-			if (!current)
-				throw std::out_of_range("List is empty");
+		void delete_node(const string& lName, const string& fName, int crs) {
+			if (_head != nullptr) {
+				Node* current = _head->next;
+				Node* prev = _head;
+				while (current != _head) {
+					if (current->lastName == lName && current->firstName == fName && current->course == crs) {
+						prev->next = current->next;
+						delete current;
+						current = prev->next;
+					} else {
+						prev = current;
+						current = prev->next;
+					}
+				}
+			}
+		}
+
+		Node* operator[](int index) const {
+			if (index < 0 || head == nullptr) return nullptr;
+
+			Node* current = _head->next;
+			int count = 0;
 
 			do {
-				if (counter == index) {
-					return current->_cofficient;
-				}
-				current = current->_next;
-				counter++;
-			} while (current != _head);
+				if (count == index) return current;
+				++count;
+				current = current->next;
+			} while (current != _head->next);
 
-			throw std::out_of_range("Index out of range");
+			return nullptr; 
+		}
+
+		Node*& operator[](int index) {
+			if (index < 0 || _head == nullptr) 
+				throw out_of_range("Index out of range");
+
+			Node* current = _head->next;
+			int count = 0;
+
+			do {
+				if (count == index) 
+					return current;
+				++count;
+				current = current->next;
+			} while (current != _head->next);
+
+			throw out_of_range("Index out of range"); 
 		}
 		void removeDuplicates() {
-			if (_head == nullptr) {
-				return;  
-			}
+			unordered_set<string> seen;
+			Student* current = head->next;
+			Student* prev = _head;
 
-			Node<T>* current = _head;
-			while (current != nullptr) {
-				Node<T>* runner = current;
-				while (runner->next != nullptr) {
-					if (current->data.surname == runner->next->data.surname &&
-						current->data.name == runner->next->data.name &&
-						current->data.course == runner->next->data.course) {
-						Node<T>* duplicate = runner->_next;
-						runner->next = runner->next->_next;
-						delete duplicate;
-					}
-					else {
-						runner = runner->_next;
-					}
+			while (current != _head) {
+				string key = current->firstName + current->lastName + to_string(current->course);
+				if (seen.find(key) != seen.end()) {
+					prev->next = current->next;
+					delete current;
+				} else {
+					seen.insert(key);
+					prev = current;
 				}
-				current = current->_next;
+				current = prev->next;
 			}
 		}
-
 	};
-	
-
 }
